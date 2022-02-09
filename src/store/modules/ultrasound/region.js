@@ -43,16 +43,19 @@ export default class UltrasoundRegion {
   contains(pt) {
     const { x0, x1, y0, y1 } = this;
     const { x, y } = pt;
+
     return x >= x0 && x <= x1 && y >= y0 && y <= y1;
   }
 
   extractBit(bit) {
     const { regionFlags } = this;
+
     return (regionFlags & (1 << bit)) >> bit;
   }
 
   area() {
     const { x0, x1, y0, y1 } = this;
+
     return Math.abs(x1 - x0) * Math.abs(y1 - y0);
   }
 
@@ -103,12 +106,14 @@ export default class UltrasoundRegion {
 }
 
 export const getUltrasoundRegions = image => {
-  const sequenceOfUltrasoundRegions = image.data.elements['x00186011'];
+  const sequenceOfUltrasoundRegions =
+    image && image.data && image.data.elements && image.data.elements.x00186011;
   const ultrasoundRegions =
     sequenceOfUltrasoundRegions &&
     sequenceOfUltrasoundRegions.items.length > 0 &&
     sequenceOfUltrasoundRegions.items.map(
       item => new UltrasoundRegion(item.dataSet)
     );
+
   return ultrasoundRegions || [];
 };
