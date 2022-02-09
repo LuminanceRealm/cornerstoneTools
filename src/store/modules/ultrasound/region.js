@@ -34,23 +34,29 @@ export default class UltrasoundRegion {
     this.scrollingRegion2 = this.extractBit(4);
     this.pixelComponentOrganization = region.uint16('x00186044');
     this.pixelComponentMask = region.uint32('x00186046');
+    this.contains.bind(this);
+    this.extractBit.bind(this);
+    this.area.bind(this);
+    this.units.bind(this);
   }
 
-  contains = pt => {
+  contains(pt) {
+    const { x0, x1, y0, y1 } = this;
     const { x, y } = pt;
-    return x >= this.x0 && x <= this.x1 && y >= this.y0 && y <= this.y1;
-  };
+    return x >= x0 && x <= x1 && y >= y0 && y <= y1;
+  }
 
-  extractBit = bit => {
+  extractBit(bit) {
     const { regionFlags } = this;
     return (regionFlags & (1 << bit)) >> bit;
-  };
+  }
 
-  area = () => {
-    return Math.abs(this.x1 - this.x0) * Math.abs(this.y1 - this.y0);
-  };
+  area() {
+    const { x0, x1, y0, y1 } = this;
+    return Math.abs(x1 - x0) * Math.abs(y1 - y0);
+  }
 
-  units = () => {
+  units() {
     const { physicalUnitsX, physicalUnitsY } = this;
 
     if (
@@ -93,7 +99,7 @@ export default class UltrasoundRegion {
     }
 
     return 'pixels';
-  };
+  }
 }
 
 export const getUltrasoundRegions = image => {

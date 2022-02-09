@@ -274,6 +274,7 @@ export default class LengthTool extends BaseAnnotationTool {
       }
 
       annotation.unit = suffix;
+
       return `${measuredValue.toFixed(digits)} ${suffix}`;
     }
 
