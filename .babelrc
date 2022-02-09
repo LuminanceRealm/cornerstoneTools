@@ -9,7 +9,8 @@
         "regenerator": true,
         "useESModules": false
       }
-    ]
+    ],
+    "@babel/plugin-proposal-class-properties"
   ],
   "env": {
     "test": {
