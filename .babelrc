@@ -9,7 +9,7 @@
         "regenerator": true,
         "useESModules": false
       }
-    ],
+    ]
   ],
   "env": {
     "test": {
