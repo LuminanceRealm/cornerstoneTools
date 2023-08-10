@@ -1,5 +1,5 @@
 {
-  "name": "cornerstone-tools",
+  "name": "@luminancerealm/cornerstone-tools",
   "version": "0.0.0-semantically-released",
   "description": "Medical imaging tools for the Cornerstone library",
   "main": "./dist/cornerstoneTools.js",
