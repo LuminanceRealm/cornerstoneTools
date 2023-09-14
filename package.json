@@ -1,6 +1,6 @@
 {
   "name": "@luminancerealm/cornerstone-tools",
-  "version": "0.0.0-semantically-released",
+  "version": "2023.09.14+0",
   "description": "Medical imaging tools for the Cornerstone library",
   "main": "./dist/cornerstoneTools.js",
   "keywords": [
