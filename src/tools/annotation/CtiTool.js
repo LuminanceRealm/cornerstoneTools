@@ -35,6 +35,39 @@ export default class CTITool extends BaseAnnotationTool {
     super(props, defaultProps);
 
     this.throttledUpdateCachedStats = throttle(this.updateCachedStats, 110);
+
+    this.currentStep = 0;
+
+    this.handleDragCallback = this.handleDragCallback.bind(this);
+  }
+
+  handleDragCallback(eventData) {
+    const toolData = getToolState(eventData.element, this.name);
+
+    if (!toolData || !toolData.data || !toolData.data.length) {
+      return;
+    }
+
+    const data = toolData.data[0]; // Assuming you're working with the first measurement
+
+    const { x, y } = eventData.currentPoints.image;
+
+    switch (this.currentStep) {
+      case 1:
+        data.handles.heartEnd.x = x;
+        data.handles.heartEnd.y = y;
+        break;
+      case 2:
+        data.handles.chestStart.x = x;
+        data.handles.chestStart.y = y;
+        break;
+      case 3:
+        data.handles.chestEnd.x = x;
+        data.handles.chestEnd.y = y;
+        break;
+      default:
+        break;
+    }
   }
 
   /**
@@ -45,26 +78,93 @@ export default class CTITool extends BaseAnnotationTool {
   createNewMeasurement(eventData) {
     const { x, y } = eventData.currentPoints.image;
 
-    return {
-      visible: true,
-      active: true,
-      color: undefined,
-      invalidated: true,
-      handles: {
-        heartStart: { x, y, highlight: true, active: false },
-        heartEnd: { x, y, highlight: true, active: true },
-        chestStart: { x, y, highlight: true, active: false },
-        chestEnd: { x, y, highlight: true, active: false },
-        textBox: {
-          active: false,
-          hasMoved: false,
-          movesIndependently: false,
-          drawnIndependently: true,
-          allowedOutsideImage: true,
-          hasBoundingBox: true,
+    // Initialize the measurement data if it's the first step
+    if (this.currentStep === 0) {
+      this.currentStep++;
+
+      return {
+        visible: true,
+        active: true,
+        color: undefined,
+        invalidated: true,
+        handles: {
+          heartStart: { x, y, highlight: true, active: false },
+          heartEnd: { x, y, highlight: true, active: true },
+          chestStart: { x, y, highlight: true, active: false },
+          chestEnd: { x, y, highlight: true, active: false },
+          textBox: {
+            active: false,
+            hasMoved: false,
+            movesIndependently: false,
+            drawnIndependently: true,
+            allowedOutsideImage: true,
+            hasBoundingBox: true,
+          },
         },
-      },
-    };
+      };
+    }
+
+    // Handle subsequent steps
+    const toolData = getToolState(eventData.element, this.name);
+
+    if (!toolData || !toolData.data || !toolData.data.length) {
+      return;
+    }
+
+    const data = toolData.data[0]; // Assuming you're working with the first measurement
+
+    switch (this.currentStep) {
+      case 1:
+        data.handles.heartEnd.x = x;
+        data.handles.heartEnd.y = y;
+        this.currentStep++;
+        break;
+      case 2:
+        data.handles.chestStart.x = x;
+        data.handles.chestStart.y = y;
+        this.currentStep++;
+        break;
+      case 3:
+        data.handles.chestEnd.x = x;
+        data.handles.chestEnd.y = y;
+        // Update the text box position
+        data.handles.textBox.x = x;
+        data.handles.textBox.y = y;
+        // Invalidate the data to force an update
+        data.invalidated = true;
+        this.currentStep = 0; // Reset to allow new measurements
+        break;
+      default:
+        break;
+    }
+
+    return data;
+  }
+
+  /**
+   *
+   *
+   * @param {*} element
+   * @param {*} data
+   * @param {*} coords
+   * @returns {Boolean}
+   */
+  pointNearTool(element, data, coords) {
+    const hasStartAndEndHandles =
+      data && data.handles && data.handles.start && data.handles.end;
+    const validParameters = hasStartAndEndHandles;
+
+    if (!validParameters) {
+      logger.warn(
+        `invalid parameters supplied to tool ${this.name}'s pointNearTool`
+      );
+
+      return false;
+    }
+
+    if (data.visible === false) {
+      return false;
+    }
   }
 
   /**
@@ -136,6 +236,10 @@ export default class CTITool extends BaseAnnotationTool {
           this.throttledUpdateCachedStats(image, element, data);
         }
 
+        // Position the text box next to the chestEnd handle
+        data.handles.textBox.x = data.handles.chestEnd.x - 150; // Adjust the '20' as needed
+        data.handles.textBox.y = data.handles.chestEnd.y - 150;
+
         const text = textBoxText(data, digits);
 
         drawLinkedTextBox(
@@ -144,6 +248,7 @@ export default class CTITool extends BaseAnnotationTool {
           data.handles.textBox,
           text,
           data.handles,
+          () => [data.handles.chestEnd], // Pass the chestEnd handle as the anchor point
           color
         );
       });
