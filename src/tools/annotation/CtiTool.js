@@ -183,7 +183,7 @@ export default class CTITool extends BaseAnnotationTool {
       (data.handles.chestEnd.x - data.handles.chestStart.x) *
       (colPixelSpacing || 1);
 
-    const cti = (dxHeart / dxChest) * 100;
+    const cti = Math.abs(dxHeart / dxChest);
 
     data.cti = cti;
     data.invalidated = false;
@@ -267,7 +267,7 @@ export default class CTITool extends BaseAnnotationTool {
         return '';
       }
 
-      annotation.unit = '%';
+      annotation.unit = '';
 
       return `${measuredValue.toFixed(digits)} ${annotation.unit}`;
     }
